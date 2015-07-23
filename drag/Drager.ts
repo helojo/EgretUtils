@@ -7,26 +7,26 @@ module app {
 	export class Drager {
     	
         private target: egret.DisplayObject;
-        private stage: egret.Stage;
 		public constructor(t:egret.DisplayObject) {
             this.target = t;
             if(this.target)
             {
-                this.stage = this.target.stage;
-                this.stage.addEventListener(egret.TouchEvent.TOUCH_BEGIN,this.touchBegin,this);
-                this.stage.addEventListener(egret.TouchEvent.TOUCH_MOVE,this.touchMove,this);
-                this.stage.addEventListener(egret.TouchEvent.TOUCH_END,this.touchEnd,this);  
+                this.target.touchEnabled = true;
+                this.target.addEventListener(egret.TouchEvent.TOUCH_BEGIN,this.touchBegin,this);
+                this.target.addEventListener(egret.TouchEvent.TOUCH_MOVE,this.touchMove,this);
+                this.target.addEventListener(egret.TouchEvent.TOUCH_END,this.touchEnd,this);  
             }
 		}
 		
         private sx: number = 0;
         private sy: number = 0;
+        private canDrag: boolean;
 		private touchBegin(e:egret.TouchEvent):void
 		{
-            console.log(e.target);
             this.sx = e.stageX;
             this.sy = e.stageY;
             this.isMoved = false;
+            this.canDrag = true;
 		}
 		/**
 		 * 是否正在拖动
@@ -42,6 +42,10 @@ module app {
         private delay: number = 0;
         private touchMove(e:egret.TouchEvent):void
         {
+            if(!this.canDrag)
+            {
+                return;
+            }
             this.dx = e.stageX - this.sx;
             this.dy = e.stageY - this.sy;
             
@@ -81,12 +85,14 @@ module app {
         private touchEnd(e:egret.TouchEvent):void
         {
             this.isDraging = false;
+            this.canDrag = false;
         }
 		
         private dragWidth: number = 0;
         private dragHeight: number = 0;
         /**
          * 如果rec不传，可以任意拖动！
+         * rec 是视窗的大小的Rectangle
          */ 
 		public setup(rec:egret.Rectangle=null):void
 		{
@@ -100,11 +106,12 @@ module app {
 		
 		public dispose():void
 		{
-    		if(this.stage)
+    		if(this.target)
             {
-                this.stage.removeEventListener(egret.TouchEvent.TOUCH_BEGIN,this.touchBegin,this);
-                this.stage.removeEventListener(egret.TouchEvent.TOUCH_MOVE,this.touchMove,this);
-                this.stage.removeEventListener(egret.TouchEvent.TOUCH_END,this.touchEnd,this); 
+                this.target.removeEventListener(egret.TouchEvent.TOUCH_BEGIN,this.touchBegin,this);
+                this.target.removeEventListener(egret.TouchEvent.TOUCH_MOVE,this.touchMove,this);
+                this.target.removeEventListener(egret.TouchEvent.TOUCH_END,this.touchEnd,this); 
+                this.target = null;
             }
 
 		}
